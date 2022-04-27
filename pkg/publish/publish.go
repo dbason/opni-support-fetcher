@@ -8,6 +8,7 @@ import (
 
 	"github.com/dbason/opni-support-fetcher/pkg/util"
 	"github.com/go-gota/gota/dataframe"
+	"github.com/go-gota/gota/series"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -87,7 +88,12 @@ func (p *Publisher) publishResults(hits gjson.Result) error {
 		return true
 	})
 
-	df := dataframe.LoadMaps(results)
+	df := dataframe.LoadMaps(
+		results,
+		dataframe.WithTypes(map[string]series.Type{
+			"cluster_id": series.String,
+		}),
+	)
 	data := convertDataframeToJSON(df)
 	return p.Publish("raw_logs", data)
 }
